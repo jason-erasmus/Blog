@@ -12,17 +12,17 @@ for i in response:
         "title": i["title"],
         "subtitle": i["subtitle"],
         "body": i["body"],
+        "author": i["author"],
         "image_url": i["image_url"],
     }
     blog_objects.append(blog_obj)
 
 # The line `print(blog_objects)` is printing the contents of the `blog_objects` list. It is used to
 # display the data retrieved from the API in a readable format in the console.
-print(blog_objects)
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", posts=blog_objects)
 
 
 @app.route("/about")
@@ -35,9 +35,13 @@ def contact():
     return render_template("contact.html")
 
 
-@app.route("/post")
-def post():
-    return render_template("post.html")
+@app.route("/post/<int:index>")
+def show_post(index):
+    requested_post = None
+    for blog_post in blog_objects:
+        if blog_post["id"] == index:
+            requested_post = blog_post
+    return render_template("post.html",post=requested_post)
 
 
 if __name__ == "__main__":
