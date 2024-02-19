@@ -1,28 +1,14 @@
-from flask import Flask, render_template
 import requests
-
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-response = requests.get("https://api.npoint.io/ca9dd2cf4f4c1caebf94").json()
-blog_objects = []
-for i in response:
-    blog_obj = {
-        "id": i["id"],
-        "title": i["title"],
-        "subtitle": i["subtitle"],
-        "body": i["body"],
-        "author": i["author"],
-        "image_url": i["image_url"],
-    }
-    blog_objects.append(blog_obj)
+posts = requests.get("https://api.npoint.io/ca9dd2cf4f4c1caebf94").json()
 
-# The line `print(blog_objects)` is printing the contents of the `blog_objects` list. It is used to
-# display the data retrieved from the API in a readable format in the console.
 
 @app.route("/")
 def home():
-    return render_template("index.html", posts=blog_objects)
+    return render_template("index.html", blog_posts=posts)
 
 
 @app.route("/about")
@@ -30,18 +16,25 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["POST", "GET"])
 def contact():
-    return render_template("contact.html")
+    if request.method == "POST":
+        data = request.form
+        print(data["name"])
+        print(data["email"])
+        print(data["phone_number"])
+        print(data["message"])
+        return render_template("contact.html", msg_sent=True)
+    return render_template("contact.html", msg_sent=False)
 
 
 @app.route("/post/<int:index>")
 def show_post(index):
     requested_post = None
-    for blog_post in blog_objects:
+    for blog_post in posts:
         if blog_post["id"] == index:
             requested_post = blog_post
-    return render_template("post.html",post=requested_post)
+    return render_template("post.html", post=requested_post)
 
 
 if __name__ == "__main__":
